@@ -90,24 +90,32 @@ export default function MallClinicPortal() {
   const [calStartDate, setCalStartDate] = useState('2026-11-01');
   const [calEndDate, setCalEndDate] = useState('2026-11-30');
 
-  const [queueList, setQueueList] = useState([
-    {
-      ticketNo: 'Q-01',
-      fullName: 'mika',
-      category: 'Mall Tenant Staff / Employee',
-      department: 'nike',
-      contactNumber: '09560015266',
-      chiefComplaint: 'headache',
-      reportType: 'Illness',
-      status: 'Waiting',
-      disposition: 'Pending',
-      dateOfAssessment: '11/10/2026 03:00 PM',
-      completionDate: '-',
-      vitals: { bp: '120/80 mmHg', pr: '78 bpm', temp: '36.5 °C', spo2: '98% SpO2' },
-      soap: { subjective: 'Patient reports throbbing headache since morning.', objective: 'Alert, conscious, no acute distress.', assessment: 'Tension headache', plan: 'Administered Advil 2 tabs and advised rest.' },
-      medicationsUsed: [{ name: "ADVIL", quantity: 2, unitPrice: 8.75 }]
-    }
-  ]);
+  // LOCALSTORAGE PERSISTENCE FOR QUEUE LIST
+  const [queueList, setQueueList] = useState(() => {
+    const saved = localStorage.getItem('acienda_clinic_queue');
+    return saved ? JSON.parse(saved) : [
+      {
+        ticketNo: 'Q-01',
+        fullName: 'mika',
+        category: 'Mall Tenant Staff / Employee',
+        department: 'nike',
+        contactNumber: '09560015266',
+        chiefComplaint: 'headache',
+        reportType: 'Illness',
+        status: 'Waiting',
+        disposition: 'Pending',
+        dateOfAssessment: '11/10/2026 03:00 PM',
+        completionDate: '-',
+        vitals: { bp: '120/80 mmHg', pr: '78 bpm', temp: '36.5 °C', spo2: '98% SpO2' },
+        soap: { subjective: 'Patient reports throbbing headache since morning.', objective: 'Alert, conscious, no acute distress.', assessment: 'Tension headache', plan: 'Administered Advil 2 tabs and advised rest.' },
+        medicationsUsed: [{ name: "ADVIL", quantity: 2, unitPrice: 8.75 }]
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('acienda_clinic_queue', JSON.stringify(queueList));
+  }, [queueList]);
 
   const [recordRequestForm, setRecordRequestForm] = useState({
     fullName: '',
@@ -117,22 +125,30 @@ export default function MallClinicPortal() {
     purpose: 'Employment Medical Clearance'
   });
 
-  const [oshIncidents, setOshIncidents] = useState([
-    {
-      incidentId: 'OSH-1001',
-      dateOfIncident: '2026-11-08',
-      timeOfIncident: '10:30 AM',
-      location: 'Ground Floor Atrium Corridor',
-      incidentType: 'Slip, Trip, and Fall',
-      severity: 'Minor-1st Aid only',
-      injuredPerson: 'Juan Dela Cruz',
-      department: 'Store Staff (Nike)',
-      description: 'Wet floor due to cleaning without caution signage.',
-      immediateAction: 'Provided first aid and placed wet floor signs.',
-      reportedBy: 'Glecenda Anciro, RN',
-      status: 'Under Investigation'
-    }
-  ]);
+  // LOCALSTORAGE PERSISTENCE FOR OSH INCIDENTS
+  const [oshIncidents, setOshIncidents] = useState(() => {
+    const saved = localStorage.getItem('acienda_clinic_osh');
+    return saved ? JSON.parse(saved) : [
+      {
+        incidentId: 'OSH-1001',
+        dateOfIncident: '2026-11-08',
+        timeOfIncident: '10:30 AM',
+        location: 'Ground Floor Atrium Corridor',
+        incidentType: 'Slip, Trip, and Fall',
+        severity: 'Minor-1st Aid only',
+        injuredPerson: 'Juan Dela Cruz',
+        department: 'Store Staff (Nike)',
+        description: 'Wet floor due to cleaning without caution signage.',
+        immediateAction: 'Provided first aid and placed wet floor signs.',
+        reportedBy: 'Glecenda Anciro, RN',
+        status: 'Under Investigation'
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('acienda_clinic_osh', JSON.stringify(oshIncidents));
+  }, [oshIncidents]);
 
   const [oshForm, setOshForm] = useState({
     dateOfIncident: new Date().toISOString().split('T')[0],
@@ -148,22 +164,30 @@ export default function MallClinicPortal() {
     status: 'Open'
   });
 
-  const [calendarEvents, setCalendarEvents] = useState([
-    {
-      eventId: 'CAL-501',
-      activityName: 'Açienda Health & Wellness Fair 2026',
-      scheduledDate: '2026-11-20',
-      scheduledTime: '09:00 AM',
-      location: 'Main Atrium, Açienda Outlet',
-      kpiCategory: 'KPI1: Statutory Compliance',
-      recurrence: 'One-Time Only',
-      status: 'In Progress',
-      statusDate: '2026-11-10',
-      assignedPerson: 'Glecenda Anciro, RN, RM, OHN',
-      notes: 'Coordination with Philhealth YAKAP and medical partners.',
-      attachment: null
-    }
-  ]);
+  // LOCALSTORAGE PERSISTENCE FOR CALENDAR EVENTS
+  const [calendarEvents, setCalendarEvents] = useState(() => {
+    const saved = localStorage.getItem('acienda_clinic_calendar');
+    return saved ? JSON.parse(saved) : [
+      {
+        eventId: 'CAL-501',
+        activityName: 'Açienda Health & Wellness Fair 2026',
+        scheduledDate: '2026-11-20',
+        scheduledTime: '09:00 AM',
+        location: 'Main Atrium, Açienda Outlet',
+        kpiCategory: 'KPI1: Statutory Compliance',
+        recurrence: 'One-Time Only',
+        status: 'In Progress',
+        statusDate: '2026-11-10',
+        assignedPerson: 'Glecenda Anciro, RN, RM, OHN',
+        notes: 'Coordination with Philhealth YAKAP and medical partners.',
+        attachment: null
+      }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('acienda_clinic_calendar', JSON.stringify(calendarEvents));
+  }, [calendarEvents]);
 
   const [calForm, setCalForm] = useState({
     activityName: '',

@@ -124,7 +124,7 @@ export default function MallClinicPortal() {
       timeOfIncident: '10:30 AM',
       location: 'Ground Floor Atrium Corridor',
       incidentType: 'Slip, Trip, and Fall',
-      severity: 'Minor',
+      severity: 'Minor-1st Aid only',
       injuredPerson: 'Juan Dela Cruz',
       department: 'Store Staff (Nike)',
       description: 'Wet floor due to cleaning without caution signage.',
@@ -139,7 +139,7 @@ export default function MallClinicPortal() {
     timeOfIncident: '',
     location: '',
     incidentType: 'Slip, Trip, and Fall',
-    severity: 'Minor',
+    severity: 'Minor-1st Aid only',
     injuredPerson: '',
     department: '',
     description: '',
@@ -184,6 +184,7 @@ export default function MallClinicPortal() {
   const [latestTicket, setLatestTicket] = useState(null);
   const [intakeForm, setIntakeForm] = useState({ fullName: '', category: 'Mall Tenant Staff / Employee', department: '', contactNumber: '', chiefComplaint: '', reportType: 'Illness' });
   const [editingEvent, setEditingEvent] = useState(null);
+  const [editingOshIncident, setEditingOshIncident] = useState(null);
 
   useEffect(() => {
     const updateClock = () => {
@@ -263,13 +264,13 @@ export default function MallClinicPortal() {
     const incidentId = `OSH-${Math.floor(1000 + Math.random() * 9000)}`;
     const newIncident = { incidentId, ...oshForm };
     setOshIncidents([newIncident, ...oshIncidents]);
-    alert(`OSH Incident Report successfully filed!\nReference ID: ${incidentId}`);
+    alert(`OSH Incident Report successfully filed and saved to Monthly OSH Registry!\nReference ID: ${incidentId}`);
     setOshForm({
       dateOfIncident: new Date().toISOString().split('T')[0],
       timeOfIncident: '',
       location: '',
       incidentType: 'Slip, Trip, and Fall',
-      severity: 'Minor',
+      severity: 'Minor-1st Aid only',
       injuredPerson: '',
       department: '',
       description: '',
@@ -277,6 +278,13 @@ export default function MallClinicPortal() {
       reportedBy: currentUser ? currentUser.name : 'Visitor / Patient',
       status: 'Open'
     });
+  };
+
+  const handleSaveEditedOsh = (e) => {
+    e.preventDefault();
+    setOshIncidents(oshIncidents.map(inc => inc.incidentId === editingOshIncident.incidentId ? editingOshIncident : inc));
+    setEditingOshIncident(null);
+    alert('OSH Incident Status successfully updated!');
   };
 
   const generateOshPDF = (inc) => {
@@ -472,7 +480,7 @@ export default function MallClinicPortal() {
       }
       return p;
     }));
-    alert(`Medical record saved for ${currentPatient.fullName}.\nStatus: Completed - ${dispositionType}`);
+    alert(`Medical record saved for ${currentPatient.fullName} and updated in Patient Statistic Queue.\nStatus: Completed - ${dispositionType}`);
   };
 
   const generateConsultationPDF = (patient) => {
@@ -797,6 +805,55 @@ export default function MallClinicPortal() {
         </div>
       )}
 
+      {/* EDIT OSH INCIDENT STATUS MODAL */}
+      {editingOshIncident && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalCard}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: '#2563eb', margin: 0 }}>
+                Edit OSH Status: {editingOshIncident.incidentId}
+              </h3>
+              <button onClick={() => setEditingOshIncident(null)} style={{ background: 'none', border: 'none', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', color: '#64748b' }}>✕</button>
+            </div>
+
+            <form onSubmit={handleSaveEditedOsh} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div>
+                <label style={styles.label}>INCIDENT TYPE & LOCATION</label>
+                <div style={{ fontSize: '12px', color: '#1e293b', fontWeight: '600' }}>{editingOshIncident.incidentType} — {editingOshIncident.location}</div>
+              </div>
+
+              <div>
+                <label style={styles.label}>UPDATE OSH STATUS *</label>
+                <select 
+                  value={editingOshIncident.status} 
+                  onChange={(e) => setEditingOshIncident({...editingOshIncident, status: e.target.value})} 
+                  style={styles.input}
+                >
+                  <option value="Open">Open</option>
+                  <option value="Under Investigation">Under Investigation</option>
+                  <option value="Resolved & Closed">Resolved & Closed</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={styles.label}>IMMEDIATE / CORRECTIVE ACTIONS</label>
+                <textarea 
+                  rows="3" 
+                  value={editingOshIncident.immediateAction} 
+                  onChange={(e) => setEditingOshIncident({...editingOshIncident, immediateAction: e.target.value})} 
+                  style={{ ...styles.input, resize: 'vertical' }}
+                ></textarea>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <button type="button" onClick={() => setEditingOshIncident(null)} style={{ flex: 1, padding: '10px', backgroundColor: '#64748b', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Cancel</button>
+                <button type="submit" style={{ flex: 1, padding: '10px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Save Status</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* EDIT ACTIVITY MODAL */}
       {editingEvent && (
         <div style={styles.modalOverlay}>
@@ -1033,7 +1090,7 @@ export default function MallClinicPortal() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '850px', margin: '0 auto' }}>
               <div style={styles.card}>
                 <h3 style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px', color: '#2563eb' }}>+ File Occupational Safety & Health (OSH) Incident Report</h3>
-                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '16px' }}>Mag-file ng incident o hazard report alinsunod sa safety protocols ng Acienda Designer Outlet.</p>
+                <p style={{ fontSize: '11px', color: '#64748b', marginBottom: '16px' }}>Mag-file ng incident o hazard report. Awtomatiko itong mase-save sa Monthly OSH Incidents Registry.</p>
                 
                 <form onSubmit={handleOshSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
@@ -1066,10 +1123,10 @@ export default function MallClinicPortal() {
                     <div>
                       <label style={styles.label}>SEVERITY LEVEL *</label>
                       <select value={oshForm.severity} onChange={(e) => setOshForm({...oshForm, severity: e.target.value})} style={styles.input}>
-                        <option>Minor (First Aid Only)</option>
-                        <option>Moderate (Medical Treatment)</option>
-                        <option>Major (Hospitalization)</option>
-                        <option>Critical / Fatal</option>
+                        <option value="Minor-1st Aid only">Minor-1st Aid only</option>
+                        <option value="Moderate- Medical treatment">Moderate- Medical treatment</option>
+                        <option value="Major-Hospitalization">Major-Hospitalization</option>
+                        <option value="Non-Fatal- Facility damage requiring attention">Non-Fatal- Facility damage requiring attention</option>
                       </select>
                     </div>
                     <div>
@@ -1103,7 +1160,7 @@ export default function MallClinicPortal() {
                     <textarea required rows="2" value={oshForm.immediateAction} onChange={(e) => setOshForm({...oshForm, immediateAction: e.target.value})} placeholder="Anong agarang aksyon ang ginawa (hal. First aid, paglagay ng caution sign)..." style={{ ...styles.input, resize: 'vertical' }}></textarea>
                   </div>
 
-                  <button type="submit" style={styles.buttonPrimary}>Submit OSH Incident Report 📋</button>
+                  <button type="submit" style={styles.buttonPrimary}>Submit & Save OSH Incident Report 📋</button>
                 </form>
               </div>
             </div>
@@ -1317,25 +1374,25 @@ export default function MallClinicPortal() {
                   </div>
 
                   <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
-                    <label style={{ ...styles.label, marginBottom: '8px', color: '#1e293b' }}>Select Disposition Status upon Saving:</label>
+                    <label style={{ ...styles.label, marginBottom: '8px', color: '#1e293b' }}>Select Disposition Status and Save to Patient Statistic Queue:</label>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-                      <button onClick={() => handleSaveRecord('Completed-RTW with instructions')} style={{ padding: '10px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-RTW with instructions
+                      <button onClick={() => handleSaveRecord('Completed-RTW with instructions')} style={{ padding: '12px', backgroundColor: '#059669', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: RTW with instructions
                       </button>
-                      <button onClick={() => handleSaveRecord('Completed-Sent Home-for Medical Clearance and FTW')} style={{ padding: '10px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-Sent Home-for Medical Clearance & FTW
+                      <button onClick={() => handleSaveRecord('Completed-Sent Home-for Medical Clearance and FTW')} style={{ padding: '12px', backgroundColor: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: Sent Home for Clearance & FTW
                       </button>
-                      <button onClick={() => handleSaveRecord('Completed-Discharged with instructions')} style={{ padding: '10px', backgroundColor: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-Discharged with instructions
+                      <button onClick={() => handleSaveRecord('Completed-Discharged with instructions')} style={{ padding: '12px', backgroundColor: '#0d9488', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: Discharged with instructions
                       </button>
-                      <button onClick={() => handleSaveRecord('Completed-Assist in HOC transport')} style={{ padding: '10px', backgroundColor: '#ca8a04', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-Assist in HOC transport
+                      <button onClick={() => handleSaveRecord('Completed-Assist in HOC transport')} style={{ padding: '12px', backgroundColor: '#ca8a04', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: Assist in HOC transport
                       </button>
-                      <button onClick={() => handleSaveRecord('Completed-Pick up by Silang ERT-ambulance')} style={{ padding: '10px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-Pick up by Silang ERT-ambulance
+                      <button onClick={() => handleSaveRecord('Completed-Pick up by Silang ERT-ambulance')} style={{ padding: '12px', backgroundColor: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: Pick up by Silang ERT-ambulance
                       </button>
-                      <button onClick={() => handleSaveRecord('Completed-Refused HOC transfer assistance')} style={{ padding: '10px', backgroundColor: '#475569', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
-                        ✓ Completed-Refused HOC transfer assistance
+                      <button onClick={() => handleSaveRecord('Completed-Refused HOC transfer assistance')} style={{ padding: '12px', backgroundColor: '#475569', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', textAlign: 'left' }}>
+                        💾 Save & Complete: Refused HOC transfer assistance
                       </button>
                     </div>
                   </div>
@@ -1820,7 +1877,7 @@ export default function MallClinicPortal() {
                 )}
               </div>
 
-              {/* 3. OSH INCIDENTS REGISTRY TABLE WITH ITS OWN DATE FILTER */}
+              {/* 3. OSH INCIDENTS REGISTRY TABLE WITH CLICKABLE ID FOR EDITING STATUS */}
               <div style={styles.card}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
                   <h3 style={{ fontSize: '13px', fontWeight: 'bold', margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#2563eb' }}>
@@ -1849,7 +1906,7 @@ export default function MallClinicPortal() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', textAlign: 'left' }}>
                     <thead>
                       <tr style={{ backgroundColor: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
-                        <th style={{ padding: '10px' }}>ID</th>
+                        <th style={{ padding: '10px' }}>ID (Click to Edit)</th>
                         <th style={{ padding: '10px' }}>Date & Time</th>
                         <th style={{ padding: '10px' }}>Location</th>
                         <th style={{ padding: '10px' }}>Incident Type</th>
@@ -1862,7 +1919,15 @@ export default function MallClinicPortal() {
                     <tbody>
                       {oshIncidents.map((inc) => (
                         <tr key={inc.incidentId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                          <td style={{ padding: '10px', fontWeight: 'bold', color: '#2563eb' }}>{inc.incidentId}</td>
+                          <td style={{ padding: '10px' }}>
+                            <button 
+                              onClick={() => setEditingOshIncident(inc)} 
+                              style={{ background: 'none', border: 'none', color: '#2563eb', fontWeight: '900', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: '11px' }}
+                              title="Click to edit OSH status"
+                            >
+                              {inc.incidentId}
+                            </button>
+                          </td>
                           <td style={{ padding: '10px' }}>{inc.dateOfIncident}<br/><span style={{ color: '#64748b' }}>{inc.timeOfIncident}</span></td>
                           <td style={{ padding: '10px' }}>{inc.location}</td>
                           <td style={{ padding: '10px', fontWeight: '600' }}>{inc.incidentType}</td>
